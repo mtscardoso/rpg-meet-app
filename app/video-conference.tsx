@@ -1,28 +1,27 @@
-import { View, TouchableOpacity, Text, Alert, ActivityIndicator, SafeAreaView } from "react-native";
+import { View, TouchableOpacity, Text, Alert, ScrollView, Dimensions } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useRef, useEffect, useState } from "react";
-import { WebView } from "react-native-webview";
+import { useEffect, useState } from "react";
+import * as WebBrowser from "expo-web-browser";
 
 import { useColors } from "@/hooks/use-colors";
 
 /**
  * Video Conference Screen - Tela Principal de Sessão
  *
- * Tela onde acontece a videoconferência com Jitsi Meet integrado via WebView
+ * Abre a videoconferência Jitsi Meet em um navegador nativo
+ * Exibe informações da sessão enquanto o navegador está aberto
  */
 export default function VideoConferenceScreen() {
   const router = useRouter();
   const colors = useColors();
   const params = useLocalSearchParams();
-  const webViewRef = useRef<WebView>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
+  const [isJitsiOpen, setIsJitsiOpen] = useState(false);
 
   const roomName = (params.roomId as string) || "RPG-DEFAULT";
   const displayName = (params.playerName as string) || "Jogador";
   const characterClass = (params.selectedClass as string) || "Guerreiro";
 
-  // URL do Jitsi Meet - usando configuração inline
+  // URL do Jitsi Meet
   const jitsiUrl = `https://meet.jitsi.org/${encodeURIComponent(roomName)}#config.startWithAudioMuted=false&config.startWithVideoMuted=false&userInfo.displayName="${encodeURIComponent(displayName)}"`;
 
   useEffect(() => {
@@ -32,7 +31,37 @@ export default function VideoConferenceScreen() {
       characterClass,
       jitsiUrl,
     });
-  }, [roomName, displayName, characterClass, jitsiUrl]);
+
+    // Abrir Jitsi automaticamente
+    openJitsiMeeting();
+  }, []);
+
+  const openJitsiMeeting = async () => {
+    try {
+      console.log("Abrindo Jitsi Meet em navegador nativo...");
+      setIsJitsiOpen(true);
+
+      const result = await WebBrowser.openBrowserAsync(jitsiUrl);
+
+      console.log("Resultado do navegador:", result);
+
+      if (result.type === "dismiss" || result.type === "cancel") {
+        console.log("Usuário fechou o navegador");
+        setIsJitsiOpen(false);
+      }
+    } catch (error) {
+      console.error("Erro ao abrir Jitsi:", error);
+      Alert.alert(
+        "Erro",
+        "Não foi possível abrir a videoconferência. Verifique sua conexão com a internet."
+      );
+      setIsJitsiOpen(false);
+    }
+  };
+
+  const handleRetry = () => {
+    openJitsiMeeting();
+  };
 
   const handleLeaveConference = () => {
     Alert.alert("Sair da Sessão", "Tem certeza que deseja sair?", [
@@ -47,188 +76,188 @@ export default function VideoConferenceScreen() {
     ]);
   };
 
-  const handleLoadEnd = () => {
-    console.log("WebView carregou com sucesso");
-    setIsLoading(false);
-  };
-
-  const handleError = (error: any) => {
-    console.error("WebView Error:", error.nativeEvent);
-    setHasError(true);
-    setIsLoading(false);
-  };
-
-  const handleLoadStart = () => {
-    console.log("WebView começou a carregar");
-    setIsLoading(true);
-    setHasError(false);
-  };
+  const screenWidth = Dimensions.get("window").width;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-      <View style={{ flex: 1, backgroundColor: colors.background }}>
-        {/* Jitsi WebView */}
-        <WebView
-          ref={webViewRef}
-          source={{ uri: jitsiUrl }}
-          style={{ flex: 1, backgroundColor: colors.background }}
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-          startInLoadingState={true}
-          mediaPlaybackRequiresUserAction={false}
-          allowsInlineMediaPlayback={true}
-          scalesPageToFit={true}
-          allowFileAccess={true}
-          allowUniversalAccessFromFileURLs={true}
-          mixedContentMode="always"
-          userAgent="Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
-          onError={handleError}
-          onLoadStart={handleLoadStart}
-          onLoadEnd={handleLoadEnd}
-          renderLoading={() => (
-            <View
-              style={{
-                flex: 1,
-                backgroundColor: colors.background,
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <ActivityIndicator size="large" color={colors.primary} />
-              <Text style={{ color: colors.muted, marginTop: 16, fontSize: 14 }}>
-                Carregando Jitsi Meet...
-              </Text>
-              <Text style={{ color: colors.muted, marginTop: 8, fontSize: 12 }}>
-                Sala: {roomName}
-              </Text>
-            </View>
-          )}
-        />
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      {/* Main Content */}
+      <ScrollView
+        contentContainerStyle={{
+          flexGrow: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          padding: 20,
+        }}
+      >
+        <View style={{ alignItems: "center", gap: 20 }}>
+          {/* Icon */}
+          <Text style={{ fontSize: 64 }}>🎥</Text>
 
-        {/* Loading Overlay */}
-        {isLoading && (
-          <View
+          {/* Title */}
+          <Text
             style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: colors.background,
-              justifyContent: "center",
-              alignItems: "center",
-              zIndex: 999,
+              fontSize: 24,
+              fontWeight: "bold",
+              color: colors.primary,
+              textAlign: "center",
             }}
           >
-            <ActivityIndicator size="large" color={colors.primary} />
-            <Text style={{ color: colors.muted, marginTop: 16, fontSize: 14 }}>
-              Conectando à videoconferência...
-            </Text>
-            <Text style={{ color: colors.muted, marginTop: 8, fontSize: 12 }}>
-              {roomName}
-            </Text>
-          </View>
-        )}
+            Videoconferência Jitsi Meet
+          </Text>
 
-        {/* Error Overlay */}
-        {hasError && (
+          {/* Status */}
           <View
             style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: colors.background,
-              justifyContent: "center",
-              alignItems: "center",
-              zIndex: 999,
-              padding: 20,
-            }}
-          >
-            <Text style={{ color: colors.error, fontSize: 18, fontWeight: "bold", marginBottom: 10 }}>
-              ⚠️ Erro ao Carregar
-            </Text>
-            <Text style={{ color: colors.muted, fontSize: 14, textAlign: "center", marginBottom: 20 }}>
-              Não foi possível carregar a videoconferência. Verifique sua conexão com a internet.
-            </Text>
-            <TouchableOpacity
-              onPress={() => {
-                setHasError(false);
-                setIsLoading(true);
-                webViewRef.current?.reload();
-              }}
-              style={{
-                backgroundColor: colors.primary,
-                paddingHorizontal: 24,
-                paddingVertical: 12,
-                borderRadius: 8,
-              }}
-            >
-              <Text style={{ color: colors.background, fontSize: 16, fontWeight: "bold" }}>
-                Tentar Novamente
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {/* Floating Leave Button */}
-        <View
-          style={{
-            position: "absolute",
-            bottom: 20,
-            right: 20,
-            zIndex: 100,
-          }}
-        >
-          <TouchableOpacity
-            onPress={handleLeaveConference}
-            style={{
-              backgroundColor: colors.error,
-              paddingHorizontal: 16,
-              paddingVertical: 12,
+              backgroundColor: colors.surface,
               borderRadius: 8,
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.3,
-              shadowRadius: 4,
-              elevation: 5,
+              padding: 16,
+              borderWidth: 2,
+              borderColor: colors.border,
+              width: "100%",
+            }}
+          >
+            <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 8 }}>
+              Status da Sessão
+            </Text>
+
+            <View style={{ gap: 12 }}>
+              <View>
+                <Text style={{ color: colors.muted, fontSize: 11 }}>Sala</Text>
+                <Text
+                  style={{
+                    color: colors.primary,
+                    fontSize: 16,
+                    fontWeight: "bold",
+                  }}
+                >
+                  {roomName}
+                </Text>
+              </View>
+
+              <View>
+                <Text style={{ color: colors.muted, fontSize: 11 }}>Jogador</Text>
+                <Text
+                  style={{
+                    color: colors.foreground,
+                    fontSize: 14,
+                    fontWeight: "bold",
+                  }}
+                >
+                  {displayName}
+                </Text>
+              </View>
+
+              <View>
+                <Text style={{ color: colors.muted, fontSize: 11 }}>Classe</Text>
+                <Text
+                  style={{
+                    color: colors.foreground,
+                    fontSize: 14,
+                    fontWeight: "bold",
+                  }}
+                >
+                  {characterClass}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Info Box */}
+          <View
+            style={{
+              backgroundColor: colors.background,
+              borderRadius: 8,
+              padding: 16,
+              borderLeftWidth: 4,
+              borderLeftColor: colors.primary,
+              width: "100%",
             }}
           >
             <Text
               style={{
-                color: colors.background,
-                fontSize: 14,
-                fontWeight: "bold",
+                color: colors.muted,
+                fontSize: 13,
+                lineHeight: 20,
               }}
             >
-              Sair
+              {isJitsiOpen
+                ? "📱 A videoconferência Jitsi Meet foi aberta em um navegador. Retorne aqui quando terminar."
+                : "📱 Clique em 'Abrir Jitsi' para iniciar a videoconferência com seus amigos."}
             </Text>
-          </TouchableOpacity>
-        </View>
+          </View>
 
-        {/* Session Info */}
-        <View
-          style={{
-            position: "absolute",
-            top: 20,
-            left: 20,
-            backgroundColor: colors.surface,
-            borderRadius: 8,
-            padding: 12,
-            borderWidth: 2,
-            borderColor: colors.border,
-            zIndex: 100,
-          }}
-        >
-          <Text style={{ color: colors.primary, fontSize: 12, fontWeight: "bold" }}>
-            Sala: {roomName}
-          </Text>
-          <Text style={{ color: colors.foreground, fontSize: 12 }}>
-            {displayName} ({characterClass})
-          </Text>
+          {/* Action Buttons */}
+          <View style={{ gap: 12, width: "100%" }}>
+            <TouchableOpacity
+              onPress={openJitsiMeeting}
+              style={{
+                backgroundColor: colors.primary,
+                paddingHorizontal: 24,
+                paddingVertical: 16,
+                borderRadius: 8,
+                alignItems: "center",
+              }}
+            >
+              <Text
+                style={{
+                  color: colors.background,
+                  fontSize: 18,
+                  fontWeight: "bold",
+                }}
+              >
+                {isJitsiOpen ? "Abrir Novamente" : "Abrir Jitsi"}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={handleLeaveConference}
+              style={{
+                backgroundColor: colors.error,
+                paddingHorizontal: 24,
+                paddingVertical: 16,
+                borderRadius: 8,
+                alignItems: "center",
+              }}
+            >
+              <Text
+                style={{
+                  color: colors.background,
+                  fontSize: 18,
+                  fontWeight: "bold",
+                }}
+              >
+                Sair da Sessão
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* URL Info */}
+          <View
+            style={{
+              backgroundColor: colors.surface,
+              borderRadius: 8,
+              padding: 12,
+              borderWidth: 1,
+              borderColor: colors.border,
+              width: "100%",
+            }}
+          >
+            <Text style={{ color: colors.muted, fontSize: 10, marginBottom: 8 }}>
+              URL da Sala (compartilhe com amigos):
+            </Text>
+            <Text
+              style={{
+                color: colors.primary,
+                fontSize: 11,
+                fontFamily: "monospace",
+                textAlign: "center",
+              }}
+            >
+              {jitsiUrl.split("#")[0]}
+            </Text>
+          </View>
         </View>
-      </View>
-    </SafeAreaView>
+      </ScrollView>
+    </View>
   );
 }

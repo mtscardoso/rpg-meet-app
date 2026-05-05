@@ -1,34 +1,36 @@
-import { View, TouchableOpacity, Text, Alert, SafeAreaView } from "react-native";
+import { View, TouchableOpacity, Text, Alert } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect } from "react";
+import { WebView } from "react-native-webview";
 
 import { useColors } from "@/hooks/use-colors";
-import { JitsiMeetingComponent } from "@/components/jitsi-meeting";
 
 /**
  * Video Conference Screen - Tela Principal de Sessão
  *
- * Tela onde acontece a videoconferência com Jitsi Meet integrado
+ * Tela onde acontece a videoconferência com Jitsi Meet integrado via WebView
  */
 export default function VideoConferenceScreen() {
   const router = useRouter();
   const colors = useColors();
   const params = useLocalSearchParams();
-  const jitsiRef = useRef(null);
-  const [sessionActive, setSessionActive] = useState(true);
+  const webViewRef = useRef<WebView>(null);
 
   const roomName = (params.roomId as string) || "RPG-DEFAULT";
   const displayName = (params.playerName as string) || "Jogador";
   const characterClass = (params.selectedClass as string) || "Guerreiro";
 
+  // URL do Jitsi Meet - usando configuração inline
+  const jitsiUrl = `https://meet.jitsi.org/${encodeURIComponent(roomName)}#config.startWithAudioMuted=false&config.startWithVideoMuted=false&userInfo.displayName="${encodeURIComponent(displayName)}"`;
+
   useEffect(() => {
-    // Log dos parâmetros recebidos
     console.log("Video Conference iniciada:", {
       roomName,
       displayName,
       characterClass,
+      jitsiUrl,
     });
-  }, [roomName, displayName, characterClass]);
+  }, [roomName, displayName, characterClass, jitsiUrl]);
 
   const handleLeaveConference = () => {
     Alert.alert("Sair da Sessão", "Tem certeza que deseja sair?", [
@@ -36,7 +38,6 @@ export default function VideoConferenceScreen() {
       {
         text: "Sair",
         onPress: () => {
-          setSessionActive(false);
           router.back();
         },
         style: "destructive",
@@ -44,36 +45,40 @@ export default function VideoConferenceScreen() {
     ]);
   };
 
-  if (!sessionActive) {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background, justifyContent: "center", alignItems: "center" }}>
-        <Text style={{ color: colors.foreground, fontSize: 18 }}>Encerrando sessão...</Text>
-      </SafeAreaView>
-    );
-  }
-
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      {/* Jitsi Meeting */}
-      {roomName && displayName && (
-        <JitsiMeetingComponent
-          ref={jitsiRef}
-          roomName={roomName}
-          displayName={`${displayName} (${characterClass})`}
-          onLeave={() => {
-            setSessionActive(false);
-            router.back();
-          }}
-        />
-      )}
+      {/* Jitsi WebView */}
+      <WebView
+        ref={webViewRef}
+        source={{ uri: jitsiUrl }}
+        style={{ flex: 1 }}
+        javaScriptEnabled={true}
+        domStorageEnabled={true}
+        startInLoadingState={true}
+        mediaPlaybackRequiresUserAction={false}
+        allowsInlineMediaPlayback={true}
+        scalesPageToFit={true}
+        allowFileAccess={true}
+        allowUniversalAccessFromFileURLs={true}
+        mixedContentMode="always"
+        userAgent="Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+        onError={(error) => {
+          console.error("WebView Error:", error.nativeEvent);
+        }}
+        onLoadStart={() => {
+          console.log("WebView começou a carregar");
+        }}
+        onLoadEnd={() => {
+          console.log("WebView carregou com sucesso");
+        }}
+      />
 
-      {/* Floating Action Buttons */}
+      {/* Floating Leave Button */}
       <View
         style={{
           position: "absolute",
           bottom: 20,
           right: 20,
-          gap: 10,
           zIndex: 100,
         }}
       >
@@ -84,7 +89,6 @@ export default function VideoConferenceScreen() {
             paddingHorizontal: 16,
             paddingVertical: 12,
             borderRadius: 8,
-            alignItems: "center",
             shadowColor: "#000",
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.3,

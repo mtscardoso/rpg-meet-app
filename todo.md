@@ -36,9 +36,12 @@
 - [x] BUG CRÍTICO: Fluxo de navegação errado - CORRIGIDO (Lobby agora vai direto para Jitsi)
 - [x] Instalar react-native-webview para integração Jitsi
 - [x] Criar componente JitsiMeeting wrapper com WebView
+- [x] BUG CRÍTICO: WebView não carrega após criar/entrar na sessão - CORRIGIDO
+- [x] Corrigir renderização do componente JitsiMeetingComponent
+- [x] Adicionar loading indicator e tratamento de erros
+- [x] Adicionar session info com sala e personagem
 - [ ] Configurar permissões Android (AndroidManifest.xml)
 - [ ] Configurar permissões iOS (Info.plist)
-- [ ] Implementar listeners de eventos (onConferenceJoined, onParticipantJoined, etc.)
 - [ ] Testar integração com servidor Jitsi real
 
 ## Fase 5: HUD de Personagem

@@ -1,5 +1,5 @@
-import React, { useCallback } from "react";
-import { View } from "react-native";
+import React, { useCallback, useState } from "react";
+import { View, Text, ActivityIndicator } from "react-native";
 import { WebView } from "react-native-webview";
 import { useColors } from "@/hooks/use-colors";
 
@@ -21,21 +21,42 @@ export const JitsiMeetingComponent = React.forwardRef<
   JitsiMeetingComponentProps
 >(({ roomName, displayName, onLeave, serverUrl = "https://meet.jitsi.isadora.ai" }, ref) => {
   const colors = useColors();
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Gerar URL do Jitsi com parâmetros
-  const jitsiUrl = `${serverUrl}/${roomName}?userInfo.displayName=${encodeURIComponent(displayName)}&config.startWithAudioMuted=false&config.startWithVideoMuted=false`;
+  const jitsiUrl = `${serverUrl}/${encodeURIComponent(roomName)}?userInfo.displayName=${encodeURIComponent(displayName)}&config.startWithAudioMuted=false&config.startWithVideoMuted=false&config.disableAudioLevels=true`;
+
+  const handleLoadStart = useCallback(() => {
+    console.log("WebView começou a carregar:", jitsiUrl);
+    setIsLoading(true);
+    setError(null);
+  }, [jitsiUrl]);
+
+  const handleLoadEnd = useCallback(() => {
+    console.log("WebView carregou com sucesso");
+    setIsLoading(false);
+  }, []);
+
+  const handleError = useCallback((syntheticEvent: any) => {
+    const { nativeEvent } = syntheticEvent;
+    console.error("Erro no WebView:", nativeEvent);
+    setError(`Erro ao carregar: ${nativeEvent.description}`);
+    setIsLoading(false);
+  }, []);
 
   const handleNavigationStateChange = useCallback((newNavState: any) => {
+    console.log("Navegação mudou para:", newNavState.url);
     // Detectar quando o usuário sai da conferência
     if (newNavState.url && newNavState.url.includes("about:blank")) {
+      console.log("Usuário saiu da conferência");
       onLeave();
     }
   }, [onLeave]);
 
   const injectedJavaScript = `
     (function() {
-      // Customizar a interface do Jitsi
-      window.JitsiMeetExternalAPI = window.JitsiMeetExternalAPI || {};
+      console.log('Iniciando customização do Jitsi');
       
       // Aplicar tema medieval Grimdark
       const style = document.createElement('style');
@@ -70,12 +91,50 @@ export const JitsiMeetingComponent = React.forwardRef<
       document.head.appendChild(style);
       
       console.log('Jitsi customizado com tema medieval');
+      window.ReactNativeWebView.postMessage('Jitsi loaded');
     })();
     true;
   `;
 
+  if (error) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.background, justifyContent: "center", alignItems: "center", padding: 20 }}>
+        <Text style={{ color: colors.error, fontSize: 16, textAlign: "center", marginBottom: 10 }}>
+          ⚠️ Erro ao carregar a videoconferência
+        </Text>
+        <Text style={{ color: colors.muted, fontSize: 14, textAlign: "center" }}>
+          {error}
+        </Text>
+        <Text style={{ color: colors.muted, fontSize: 12, textAlign: "center", marginTop: 10 }}>
+          URL: {jitsiUrl}
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
+      {isLoading && (
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: colors.background,
+            zIndex: 1000,
+          }}
+        >
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={{ color: colors.muted, marginTop: 10 }}>
+            Carregando videoconferência...
+          </Text>
+        </View>
+      )}
+      
       <WebView
         ref={ref}
         source={{ uri: jitsiUrl }}
@@ -84,12 +143,20 @@ export const JitsiMeetingComponent = React.forwardRef<
         domStorageEnabled={true}
         startInLoadingState={true}
         injectedJavaScript={injectedJavaScript}
+        onLoadStart={handleLoadStart}
+        onLoadEnd={handleLoadEnd}
+        onError={handleError}
         onNavigationStateChange={handleNavigationStateChange}
         mediaPlaybackRequiresUserAction={false}
         allowsInlineMediaPlayback={true}
         scalesPageToFit={true}
-        // Permitir acesso a câmera e microfone
-        userAgent="Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36"
+        allowFileAccess={true}
+        allowUniversalAccessFromFileURLs={true}
+        mixedContentMode="always"
+        userAgent="Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36"
+        onMessage={(event) => {
+          console.log("Mensagem do WebView:", event.nativeEvent.data);
+        }}
       />
     </View>
   );

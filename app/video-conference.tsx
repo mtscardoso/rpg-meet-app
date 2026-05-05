@@ -1,8 +1,7 @@
-import { View, TouchableOpacity, Text, Alert } from "react-native";
+import { View, TouchableOpacity, Text, Alert, SafeAreaView } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 
-import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import { JitsiMeetingComponent } from "@/components/jitsi-meeting";
 
@@ -16,18 +15,20 @@ export default function VideoConferenceScreen() {
   const colors = useColors();
   const params = useLocalSearchParams();
   const jitsiRef = useRef(null);
+  const [sessionActive, setSessionActive] = useState(true);
 
   const roomName = (params.roomId as string) || "RPG-DEFAULT";
   const displayName = (params.playerName as string) || "Jogador";
+  const characterClass = (params.selectedClass as string) || "Guerreiro";
 
   useEffect(() => {
     // Log dos parâmetros recebidos
     console.log("Video Conference iniciada:", {
       roomName,
       displayName,
-      characterClass: params.selectedClass,
+      characterClass,
     });
-  }, [roomName, displayName, params.selectedClass]);
+  }, [roomName, displayName, characterClass]);
 
   const handleLeaveConference = () => {
     Alert.alert("Sair da Sessão", "Tem certeza que deseja sair?", [
@@ -35,6 +36,7 @@ export default function VideoConferenceScreen() {
       {
         text: "Sair",
         onPress: () => {
+          setSessionActive(false);
           router.back();
         },
         style: "destructive",
@@ -42,15 +44,28 @@ export default function VideoConferenceScreen() {
     ]);
   };
 
+  if (!sessionActive) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background, justifyContent: "center", alignItems: "center" }}>
+        <Text style={{ color: colors.foreground, fontSize: 18 }}>Encerrando sessão...</Text>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       {/* Jitsi Meeting */}
-      <JitsiMeetingComponent
-        ref={jitsiRef}
-        roomName={roomName}
-        displayName={displayName}
-        onLeave={() => router.back()}
-      />
+      {roomName && displayName && (
+        <JitsiMeetingComponent
+          ref={jitsiRef}
+          roomName={roomName}
+          displayName={`${displayName} (${characterClass})`}
+          onLeave={() => {
+            setSessionActive(false);
+            router.back();
+          }}
+        />
+      )}
 
       {/* Floating Action Buttons */}
       <View
@@ -59,6 +74,7 @@ export default function VideoConferenceScreen() {
           bottom: 20,
           right: 20,
           gap: 10,
+          zIndex: 100,
         }}
       >
         <TouchableOpacity
@@ -69,6 +85,11 @@ export default function VideoConferenceScreen() {
             paddingVertical: 12,
             borderRadius: 8,
             alignItems: "center",
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.3,
+            shadowRadius: 4,
+            elevation: 5,
           }}
         >
           <Text
@@ -81,6 +102,28 @@ export default function VideoConferenceScreen() {
             Sair
           </Text>
         </TouchableOpacity>
+      </View>
+
+      {/* Session Info */}
+      <View
+        style={{
+          position: "absolute",
+          top: 20,
+          left: 20,
+          backgroundColor: colors.surface,
+          borderRadius: 8,
+          padding: 12,
+          borderWidth: 2,
+          borderColor: colors.border,
+          zIndex: 100,
+        }}
+      >
+        <Text style={{ color: colors.primary, fontSize: 12, fontWeight: "bold" }}>
+          Sala: {roomName}
+        </Text>
+        <Text style={{ color: colors.foreground, fontSize: 12 }}>
+          {displayName} ({characterClass})
+        </Text>
       </View>
     </View>
   );

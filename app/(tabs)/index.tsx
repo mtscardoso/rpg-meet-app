@@ -1,7 +1,10 @@
-import { ScrollView, Text, View, TouchableOpacity } from "react-native";
+import { ScrollView, Text, View, TouchableOpacity, TextInput, Alert } from "react-native";
+import { useState } from "react";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { ScreenContainer } from "@/components/screen-container";
+import { useColors } from "@/hooks/use-colors";
 
 /**
  * Home Screen - Lobby do RPG Meet
@@ -11,6 +14,57 @@ import { ScreenContainer } from "@/components/screen-container";
  */
 export default function HomeScreen() {
   const router = useRouter();
+  const colors = useColors();
+  
+  const [playerName, setPlayerName] = useState("");
+  const [roomId, setRoomId] = useState("");
+  const [selectedClass, setSelectedClass] = useState("Guerreiro");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const classes = ["Guerreiro", "Mago", "Clérigo", "Ladino", "Paladino", "Bardo"];
+
+  const generateRoomId = () => {
+    const id = `RPG-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    setRoomId(id);
+  };
+
+  const handleEnterSession = async () => {
+    if (!playerName.trim()) {
+      Alert.alert("Erro", "Por favor, insira seu nome");
+      return;
+    }
+    if (!roomId.trim()) {
+      Alert.alert("Erro", "Por favor, insira ou gere um ID de sala");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Salvar preferências localmente
+      await AsyncStorage.setItem(
+        "playerPreferences",
+        JSON.stringify({
+          playerName,
+          selectedClass,
+          lastRoomId: roomId,
+        })
+      );
+
+      // Navegar para character sheet (próxima tela)
+      router.push({
+        pathname: "/(tabs)",
+        params: {
+          playerName,
+          roomId,
+          selectedClass,
+        },
+      });
+    } catch (error) {
+      Alert.alert("Erro", "Falha ao salvar preferências");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <ScreenContainer className="p-6 justify-between">
@@ -31,50 +85,157 @@ export default function HomeScreen() {
             {/* Name Input */}
             <View>
               <Text className="text-sm text-muted mb-2">Nome do Jogador</Text>
-              <View className="bg-background rounded px-4 py-3 border border-border">
-                <Text className="text-foreground">Seu nome aqui</Text>
-              </View>
+              <TextInput
+                className="bg-background rounded px-4 py-3 border border-border text-foreground"
+                placeholder="Seu nome aqui"
+                placeholderTextColor="#9B8B7E"
+                value={playerName}
+                onChangeText={setPlayerName}
+                editable={!isLoading}
+              />
             </View>
 
             {/* Room ID Input */}
             <View>
-              <Text className="text-sm text-muted mb-2">ID da Sala</Text>
-              <View className="bg-background rounded px-4 py-3 border border-border">
-                <Text className="text-foreground">Ex: DRAGON-2024</Text>
+              <View className="flex-row justify-between items-center mb-2">
+                <Text className="text-sm text-muted">ID da Sala</Text>
+                <TouchableOpacity
+                  onPress={generateRoomId}
+                  disabled={isLoading}
+                  style={{
+                    paddingHorizontal: 12,
+                    paddingVertical: 4,
+                    backgroundColor: colors.surface,
+                    borderRadius: 4,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                  }}
+                >
+                  <Text className="text-xs text-primary font-semibold">Gerar</Text>
+                </TouchableOpacity>
               </View>
+              <TextInput
+                className="bg-background rounded px-4 py-3 border border-border text-foreground"
+                placeholder="Ex: DRAGON-2024"
+                placeholderTextColor="#9B8B7E"
+                value={roomId}
+                onChangeText={setRoomId}
+                editable={!isLoading}
+              />
             </View>
 
             {/* Class Selector */}
             <View>
               <Text className="text-sm text-muted mb-2">Classe</Text>
-              <View className="bg-background rounded px-4 py-3 border border-border">
-                <Text className="text-foreground">Selecione sua classe</Text>
-              </View>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                className="gap-2"
+              >
+                {classes.map((cls) => (
+                  <TouchableOpacity
+                    key={cls}
+                    onPress={() => setSelectedClass(cls)}
+                    disabled={isLoading}
+                    style={{
+                      paddingHorizontal: 16,
+                      paddingVertical: 8,
+                      backgroundColor:
+                        selectedClass === cls ? colors.primary : colors.background,
+                      borderRadius: 6,
+                      borderWidth: 1,
+                      borderColor: colors.border,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: selectedClass === cls ? colors.background : colors.foreground,
+                        fontSize: 14,
+                        fontWeight: "600",
+                      }}
+                    >
+                      {cls}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
             </View>
 
             {/* Primary Button */}
-            <TouchableOpacity 
-              className="bg-primary px-6 py-4 rounded active:opacity-80 items-center"
-              onPress={() => router.push("/(tabs)")}
+            <TouchableOpacity
+              onPress={handleEnterSession}
+              disabled={isLoading}
+              style={{
+                backgroundColor: colors.primary,
+                paddingHorizontal: 24,
+                paddingVertical: 16,
+                borderRadius: 8,
+                alignItems: "center",
+                opacity: isLoading ? 0.6 : 1,
+              }}
             >
-              <Text className="text-background font-bold text-lg">Entrar na Sessão</Text>
+              <Text
+                style={{
+                  color: colors.background,
+                  fontSize: 18,
+                  fontWeight: "bold",
+                }}
+              >
+                {isLoading ? "Carregando..." : "Entrar na Sessão"}
+              </Text>
             </TouchableOpacity>
           </View>
 
           {/* Secondary Actions */}
           <View className="gap-3">
-            <TouchableOpacity 
-              className="bg-surface px-6 py-3 rounded border-2 border-border active:opacity-80 items-center"
-              onPress={() => {}}
+            <TouchableOpacity
+              onPress={() => Alert.alert("Info", "Funcionalidade em desenvolvimento")}
+              disabled={isLoading}
+              style={{
+                backgroundColor: colors.surface,
+                paddingHorizontal: 24,
+                paddingVertical: 12,
+                borderRadius: 8,
+                alignItems: "center",
+                borderWidth: 2,
+                borderColor: colors.border,
+                opacity: isLoading ? 0.6 : 1,
+              }}
             >
-              <Text className="text-foreground font-semibold">Minhas Fichas</Text>
+              <Text
+                style={{
+                  color: colors.foreground,
+                  fontSize: 16,
+                  fontWeight: "600",
+                }}
+              >
+                Minhas Fichas
+              </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
-              className="bg-surface px-6 py-3 rounded border-2 border-border active:opacity-80 items-center"
-              onPress={() => {}}
+            <TouchableOpacity
+              onPress={() => Alert.alert("Info", "Funcionalidade em desenvolvimento")}
+              disabled={isLoading}
+              style={{
+                backgroundColor: colors.surface,
+                paddingHorizontal: 24,
+                paddingVertical: 12,
+                borderRadius: 8,
+                alignItems: "center",
+                borderWidth: 2,
+                borderColor: colors.border,
+                opacity: isLoading ? 0.6 : 1,
+              }}
             >
-              <Text className="text-foreground font-semibold">Configurações</Text>
+              <Text
+                style={{
+                  color: colors.foreground,
+                  fontSize: 16,
+                  fontWeight: "600",
+                }}
+              >
+                Configurações
+              </Text>
             </TouchableOpacity>
           </View>
         </View>

@@ -1,18 +1,22 @@
 # RPG Meet - TODO List
 
 ## Fase 1: Estrutura Base e Tema Visual
-- [ ] Configurar tema medieval Grimdark em theme.config.js
-- [ ] Criar componentes temáticos: MedievalButton, MedievalCard, MedievalText
+- [x] Configurar tema medieval Grimdark em theme.config.js
+- [x] Criar componentes temáticos: MedievalButton, MedievalCard, MedievalText
 - [ ] Implementar navegação com Expo Router (Lobby, CharacterSheet, VideoConference, MasterPanel)
-- [ ] Configurar SafeArea e ScreenContainer para todas as telas
+- [x] Configurar SafeArea e ScreenContainer para todas as telas
 - [ ] Adicionar ícones medievais ao icon-symbol.tsx
+- [x] BUG: TextInputs não funcionais na tela Lobby - implementar TextInput real
+- [x] BUG: Botões não respondem corretamente - revisar onPress handlers
 
 ## Fase 2: Tela de Lobby
-- [ ] Criar tela Lobby com campos: Nome, ID da sala, Classe
-- [ ] Implementar geração de ID único de sala
-- [ ] Adicionar validação de campos
-- [ ] Criar botões: "Entrar na Sessão", "Minhas Fichas"
-- [ ] Salvar preferências localmente (AsyncStorage)
+- [x] Criar tela Lobby com TextInputs funcionais: Nome, ID da sala, Classe
+- [x] Implementar geração de ID único de sala
+- [x] Adicionar validação de campos
+- [x] Criar botões funcionais: "Entrar na Sessão", "Minhas Fichas"
+- [x] Salvar preferências localmente (AsyncStorage)
+- [x] BUGFIX: Substituir Views por TextInput real
+- [x] BUGFIX: Implementar state management para inputs
 
 ## Fase 3: Ficha de Personagem (Character Sheet)
 - [ ] Criar tela CharacterSheet com campos: Nome, Classe, HP, Mana, Atributos

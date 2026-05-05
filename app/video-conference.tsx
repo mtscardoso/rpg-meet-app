@@ -1,4 +1,4 @@
-import { View, TouchableOpacity, Text, Alert, ScrollView, Dimensions } from "react-native";
+import { View, TouchableOpacity, Text, Alert, ScrollView } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import * as WebBrowser from "expo-web-browser";
@@ -21,8 +21,8 @@ export default function VideoConferenceScreen() {
   const displayName = (params.playerName as string) || "Jogador";
   const characterClass = (params.selectedClass as string) || "Guerreiro";
 
-  // URL do Jitsi Meet
-  const jitsiUrl = `https://meet.jitsi.org/${encodeURIComponent(roomName)}#config.startWithAudioMuted=false&config.startWithVideoMuted=false&userInfo.displayName="${encodeURIComponent(displayName)}"`;
+  // URL do Jitsi Meet - simples e direta
+  const jitsiUrl = `https://meet.jitsi.org/${encodeURIComponent(roomName)}`;
 
   useEffect(() => {
     console.log("Video Conference iniciada:", {
@@ -31,14 +31,11 @@ export default function VideoConferenceScreen() {
       characterClass,
       jitsiUrl,
     });
-
-    // Abrir Jitsi automaticamente
-    openJitsiMeeting();
   }, []);
 
   const openJitsiMeeting = async () => {
     try {
-      console.log("Abrindo Jitsi Meet em navegador nativo...");
+      console.log("Abrindo Jitsi Meet:", jitsiUrl);
       setIsJitsiOpen(true);
 
       const result = await WebBrowser.openBrowserAsync(jitsiUrl);
@@ -59,24 +56,23 @@ export default function VideoConferenceScreen() {
     }
   };
 
-  const handleRetry = () => {
-    openJitsiMeeting();
-  };
-
   const handleLeaveConference = () => {
     Alert.alert("Sair da Sessão", "Tem certeza que deseja sair?", [
-      { text: "Cancelar", onPress: () => {} },
+      {
+        text: "Cancelar",
+        onPress: () => console.log("Cancelado"),
+        style: "cancel",
+      },
       {
         text: "Sair",
         onPress: () => {
+          console.log("Saindo da sessão...");
           router.back();
         },
         style: "destructive",
       },
     ]);
   };
-
-  const screenWidth = Dimensions.get("window").width;
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -89,7 +85,7 @@ export default function VideoConferenceScreen() {
           padding: 20,
         }}
       >
-        <View style={{ alignItems: "center", gap: 20 }}>
+        <View style={{ alignItems: "center", gap: 20, width: "100%" }}>
           {/* Icon */}
           <Text style={{ fontSize: 64 }}>🎥</Text>
 
@@ -253,7 +249,7 @@ export default function VideoConferenceScreen() {
                 textAlign: "center",
               }}
             >
-              {jitsiUrl.split("#")[0]}
+              {jitsiUrl}
             </Text>
           </View>
         </View>

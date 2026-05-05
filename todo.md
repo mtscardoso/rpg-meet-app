@@ -30,12 +30,13 @@
 - [x] BUG: Botão "Configurações" não funciona - CORRIGIDO
 
 ## Fase 4: Integração Jitsi Meet
-- [ ] Instalar @jitsi/react-native-sdk
+- [x] BUG CRÍTICO: Fluxo de navegação errado - CORRIGIDO (Lobby agora vai direto para Jitsi)
+- [x] Instalar react-native-webview para integração Jitsi
+- [x] Criar componente JitsiMeeting wrapper com WebView
 - [ ] Configurar permissões Android (AndroidManifest.xml)
 - [ ] Configurar permissões iOS (Info.plist)
-- [ ] Criar componente JitsiMeeting wrapper
 - [ ] Implementar listeners de eventos (onConferenceJoined, onParticipantJoined, etc.)
-- [ ] Testar integração básica
+- [ ] Testar integração com servidor Jitsi real
 
 ## Fase 5: HUD de Personagem
 - [ ] Criar componente HUDFrame (borda medieval + info)

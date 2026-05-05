@@ -50,9 +50,9 @@ export default function HomeScreen() {
         })
       );
 
-      // Navegar para character sheet
+      // Navegar direto para videoconferência
       router.push({
-        pathname: "/character-sheet",
+        pathname: "/video-conference",
         params: {
           playerName,
           roomId,

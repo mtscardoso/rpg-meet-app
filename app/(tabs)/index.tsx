@@ -50,9 +50,9 @@ export default function HomeScreen() {
         })
       );
 
-      // Navegar para character sheet (próxima tela)
+      // Navegar para character sheet
       router.push({
-        pathname: "/(tabs)",
+        pathname: "/character-sheet",
         params: {
           playerName,
           roomId,
@@ -189,7 +189,7 @@ export default function HomeScreen() {
           {/* Secondary Actions */}
           <View className="gap-3">
             <TouchableOpacity
-              onPress={() => Alert.alert("Info", "Funcionalidade em desenvolvimento")}
+              onPress={() => router.push("/character-sheet")}
               disabled={isLoading}
               style={{
                 backgroundColor: colors.surface,
@@ -214,7 +214,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={() => Alert.alert("Info", "Funcionalidade em desenvolvimento")}
+              onPress={() => router.push("/settings")}
               disabled={isLoading}
               style={{
                 backgroundColor: colors.surface,

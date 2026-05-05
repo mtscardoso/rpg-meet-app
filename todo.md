@@ -19,12 +19,15 @@
 - [x] BUGFIX: Implementar state management para inputs
 
 ## Fase 3: Ficha de Personagem (Character Sheet)
-- [ ] Criar tela CharacterSheet com campos: Nome, Classe, HP, Mana, Atributos
-- [ ] Implementar barras visuais para HP e Mana
-- [ ] Criar grid de atributos (STR, DEX, CON, INT, WIS, CHA)
+- [x] BUG: Botão "Entrar na Sessão" não navega corretamente - CORRIGIDO
+- [x] Criar tela CharacterSheet com campos: Nome, Classe, HP, Mana, Atributos
+- [x] Implementar barras visuais para HP e Mana (inputs numéricos)
+- [x] Criar grid de atributos (STR, DEX, CON, INT, WIS, CHA)
 - [ ] Adicionar seção de Habilidades e Equipamento
-- [ ] Implementar modo edição (formulário)
-- [ ] Salvar ficha localmente (AsyncStorage)
+- [x] Implementar modo edição (formulário)
+- [x] Salvar ficha localmente (AsyncStorage)
+- [x] BUG: Botão "Minhas Fichas" não funciona - CORRIGIDO
+- [x] BUG: Botão "Configurações" não funciona - CORRIGIDO
 
 ## Fase 4: Integração Jitsi Meet
 - [ ] Instalar @jitsi/react-native-sdk
@@ -68,6 +71,12 @@
 - [ ] Criar ícones medievais (armas, magia, etc.)
 - [ ] Implementar efeitos visuais (glow, sombra)
 - [ ] Aplicar UI Kit completo em todos os componentes
+
+## Fase 4.5: Telas Adicionais
+- [x] Criar tela de Video Conference (placeholder para Jitsi)
+- [x] Criar tela de Settings/Configurações
+- [x] Implementar navegação entre todas as telas
+- [x] Adicionar switches para preferências (modo escuro, notificações, som)
 
 ## Fase 10: Testes e Polimento
 - [ ] Testar fluxo completo de usuário

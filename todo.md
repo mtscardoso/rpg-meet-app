@@ -17,6 +17,9 @@
 - [x] Salvar preferências localmente (AsyncStorage)
 - [x] BUGFIX: Substituir Views por TextInput real
 - [x] BUGFIX: Implementar state management para inputs
+- [x] REFACTOR: Dividir Lobby em dois fluxos - "Criar Sessão" e "Entrar na Sessão"
+- [x] Criar botão "Criar Sessão" (gera ID novo)
+- [x] Criar botão "Entrar na Sessão" (apenas nome, classe e ID existente)
 
 ## Fase 3: Ficha de Personagem (Character Sheet)
 - [x] BUG: Botão "Entrar na Sessão" não navega corretamente - CORRIGIDO

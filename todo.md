@@ -36,8 +36,11 @@
 - [x] BUG CRÍTICO: Fluxo de navegação errado - CORRIGIDO (Lobby agora vai direto para Jitsi)
 - [x] Instalar react-native-webview para integração Jitsi
 - [x] Criar componente JitsiMeeting wrapper com WebView
-- [x] BUG CRÍTICO: WebView não carrega após criar/entrar na sessão - CORRIGIDO
-- [x] Corrigir renderização do componente JitsiMeetingComponent
+- [x] BUG CRÍTICO: WebView fica carregando infinitamente - CORRIGIDO
+- [x] Usar servidor Jitsi público (meet.jitsi.org) - IMPLEMENTADO
+- [x] Adicionar timeout de carregamento com retry
+- [x] Melhorar tratamento de erros e feedback do usuário
+- [ ] Corrigir renderização do componente JitsiMeetingComponent
 - [x] Adicionar loading indicator e tratamento de erros
 - [x] Adicionar session info com sala e personagem
 - [ ] Configurar permissões Android (AndroidManifest.xml)

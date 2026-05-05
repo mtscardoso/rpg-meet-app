@@ -1,5 +1,5 @@
-import React, { useCallback, useState } from "react";
-import { View, Text, ActivityIndicator } from "react-native";
+import React, { useCallback, useState, useEffect } from "react";
+import { View, Text, ActivityIndicator, TouchableOpacity } from "react-native";
 import { WebView } from "react-native-webview";
 import { useColors } from "@/hooks/use-colors";
 
@@ -19,18 +19,32 @@ interface JitsiMeetingComponentProps {
 export const JitsiMeetingComponent = React.forwardRef<
   any,
   JitsiMeetingComponentProps
->(({ roomName, displayName, onLeave, serverUrl = "https://meet.jitsi.isadora.ai" }, ref) => {
+>(({ roomName, displayName, onLeave, serverUrl = "https://meet.jitsi.org" }, ref) => {
   const colors = useColors();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [loadTimeout, setLoadTimeout] = useState(false);
 
   // Gerar URL do Jitsi com parâmetros
-  const jitsiUrl = `${serverUrl}/${encodeURIComponent(roomName)}?userInfo.displayName=${encodeURIComponent(displayName)}&config.startWithAudioMuted=false&config.startWithVideoMuted=false&config.disableAudioLevels=true`;
+  const jitsiUrl = `${serverUrl}/${encodeURIComponent(roomName)}#config.startWithAudioMuted=false&config.startWithVideoMuted=false&config.disableAudioLevels=true&userInfo.displayName="${encodeURIComponent(displayName)}"`;
+
+  useEffect(() => {
+    // Timeout de 15 segundos para carregamento
+    const timer = setTimeout(() => {
+      if (isLoading) {
+        setLoadTimeout(true);
+        setError("Timeout ao carregar videoconferência. Verifique sua conexão.");
+      }
+    }, 15000);
+
+    return () => clearTimeout(timer);
+  }, [isLoading]);
 
   const handleLoadStart = useCallback(() => {
     console.log("WebView começou a carregar:", jitsiUrl);
     setIsLoading(true);
     setError(null);
+    setLoadTimeout(false);
   }, [jitsiUrl]);
 
   const handleLoadEnd = useCallback(() => {
@@ -41,18 +55,19 @@ export const JitsiMeetingComponent = React.forwardRef<
   const handleError = useCallback((syntheticEvent: any) => {
     const { nativeEvent } = syntheticEvent;
     console.error("Erro no WebView:", nativeEvent);
-    setError(`Erro ao carregar: ${nativeEvent.description}`);
+    setError(`Erro ao carregar: ${nativeEvent.description || "Erro desconhecido"}`);
     setIsLoading(false);
   }, []);
 
   const handleNavigationStateChange = useCallback((newNavState: any) => {
     console.log("Navegação mudou para:", newNavState.url);
-    // Detectar quando o usuário sai da conferência
-    if (newNavState.url && newNavState.url.includes("about:blank")) {
-      console.log("Usuário saiu da conferência");
-      onLeave();
-    }
-  }, [onLeave]);
+  }, []);
+
+  const handleRetry = useCallback(() => {
+    setError(null);
+    setIsLoading(true);
+    setLoadTimeout(false);
+  }, []);
 
   const injectedJavaScript = `
     (function() {
@@ -68,46 +83,75 @@ export const JitsiMeetingComponent = React.forwardRef<
           --text-color: #F5F5DC;
           --border-color: #6B4423;
         }
-        
-        body {
-          background-color: var(--background-color) !important;
-          color: var(--text-color) !important;
-        }
-        
-        .toolbox {
-          background-color: var(--surface-color) !important;
-          border-top: 2px solid var(--border-color) !important;
-        }
-        
-        button {
-          background-color: var(--primary-color) !important;
-          color: var(--background-color) !important;
-        }
-        
-        button:hover {
-          background-color: #E5C158 !important;
-        }
       \`;
       document.head.appendChild(style);
-      
-      console.log('Jitsi customizado com tema medieval');
-      window.ReactNativeWebView.postMessage('Jitsi loaded');
+      console.log('Jitsi customizado');
     })();
     true;
   `;
 
   if (error) {
     return (
-      <View style={{ flex: 1, backgroundColor: colors.background, justifyContent: "center", alignItems: "center", padding: 20 }}>
-        <Text style={{ color: colors.error, fontSize: 16, textAlign: "center", marginBottom: 10 }}>
-          ⚠️ Erro ao carregar a videoconferência
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: colors.background,
+          justifyContent: "center",
+          alignItems: "center",
+          padding: 20,
+        }}
+      >
+        <Text
+          style={{
+            color: colors.error,
+            fontSize: 18,
+            fontWeight: "bold",
+            textAlign: "center",
+            marginBottom: 10,
+          }}
+        >
+          ⚠️ Erro ao Carregar
         </Text>
-        <Text style={{ color: colors.muted, fontSize: 14, textAlign: "center" }}>
+        <Text
+          style={{
+            color: colors.muted,
+            fontSize: 14,
+            textAlign: "center",
+            marginBottom: 20,
+          }}
+        >
           {error}
         </Text>
-        <Text style={{ color: colors.muted, fontSize: 12, textAlign: "center", marginTop: 10 }}>
+        <Text
+          style={{
+            color: colors.muted,
+            fontSize: 12,
+            textAlign: "center",
+            marginBottom: 20,
+            fontStyle: "italic",
+          }}
+        >
           URL: {jitsiUrl}
         </Text>
+        <TouchableOpacity
+          onPress={handleRetry}
+          style={{
+            backgroundColor: colors.primary,
+            paddingHorizontal: 24,
+            paddingVertical: 12,
+            borderRadius: 8,
+          }}
+        >
+          <Text
+            style={{
+              color: colors.background,
+              fontSize: 16,
+              fontWeight: "bold",
+            }}
+          >
+            Tentar Novamente
+          </Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -129,12 +173,28 @@ export const JitsiMeetingComponent = React.forwardRef<
           }}
         >
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={{ color: colors.muted, marginTop: 10 }}>
+          <Text
+            style={{
+              color: colors.muted,
+              marginTop: 10,
+              fontSize: 14,
+            }}
+          >
             Carregando videoconferência...
+          </Text>
+          <Text
+            style={{
+              color: colors.muted,
+              marginTop: 5,
+              fontSize: 12,
+              fontStyle: "italic",
+            }}
+          >
+            Sala: {roomName}
           </Text>
         </View>
       )}
-      
+
       <WebView
         ref={ref}
         source={{ uri: jitsiUrl }}
@@ -153,7 +213,7 @@ export const JitsiMeetingComponent = React.forwardRef<
         allowFileAccess={true}
         allowUniversalAccessFromFileURLs={true}
         mixedContentMode="always"
-        userAgent="Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36"
+        userAgent="Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
         onMessage={(event) => {
           console.log("Mensagem do WebView:", event.nativeEvent.data);
         }}

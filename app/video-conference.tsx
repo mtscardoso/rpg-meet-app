@@ -57,21 +57,25 @@ export default function VideoConferenceScreen() {
   };
 
   const handleLeaveConference = () => {
-    Alert.alert("Sair da Sessão", "Tem certeza que deseja sair?", [
-      {
-        text: "Cancelar",
-        onPress: () => console.log("Cancelado"),
-        style: "cancel",
-      },
-      {
-        text: "Sair",
-        onPress: () => {
-          console.log("Saindo da sessão...");
-          router.back();
+    Alert.alert(
+      "Sair da Sessão",
+      "Tem certeza que deseja sair da videoconferência?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
         },
-        style: "destructive",
-      },
-    ]);
+        {
+          text: "Sair",
+          onPress: () => {
+            console.log("Saindo da sessão...");
+            // Voltar ao Lobby
+            router.push("/");
+          },
+          style: "destructive",
+        },
+      ]
+    );
   };
 
   return (

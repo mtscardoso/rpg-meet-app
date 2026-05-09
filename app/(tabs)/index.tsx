@@ -123,21 +123,25 @@ export default function HomeScreen() {
           </Text>
         </View>
 
-        {/* Tabs */}
+          {/* Tabs */}
         <View className="flex-row gap-2 p-4 border-b" style={{ borderBottomColor: colors.border }}>
           <Pressable
             onPress={() => setState((prev) => ({ ...prev, activeTab: 'create' }))}
             className={cn(
-              'flex-1 py-3 px-4 rounded-lg items-center',
+              'flex-1 py-3 px-4 rounded-lg items-center border-2',
               state.activeTab === 'create'
                 ? 'bg-yellow-500'
                 : 'bg-gray-700'
             )}
+            style={{
+              borderColor: '#D4AF37',
+              borderWidth: 2,
+            }}
           >
             <Text
               className="font-bold text-sm"
               style={{
-                color: state.activeTab === 'create' ? '#000' : colors.foreground,
+                color: state.activeTab === 'create' ? '#000' : '#D4AF37',
               }}
             >
               👑 Criar Sessão
@@ -147,16 +151,20 @@ export default function HomeScreen() {
           <Pressable
             onPress={() => setState((prev) => ({ ...prev, activeTab: 'join' }))}
             className={cn(
-              'flex-1 py-3 px-4 rounded-lg items-center',
+              'flex-1 py-3 px-4 rounded-lg items-center border-2',
               state.activeTab === 'join'
                 ? 'bg-yellow-500'
                 : 'bg-gray-700'
             )}
+            style={{
+              borderColor: '#D4AF37',
+              borderWidth: 2,
+            }}
           >
             <Text
               className="font-bold text-sm"
               style={{
-                color: state.activeTab === 'join' ? '#000' : colors.foreground,
+                color: state.activeTab === 'join' ? '#000' : '#D4AF37',
               }}
             >
               🗡️ Entrar na Sessão
@@ -314,26 +322,28 @@ export default function HomeScreen() {
           <View className="gap-2 mt-4">
             <Pressable
               onPress={() => router.push('/character-sheet')}
-              className="py-3 px-4 rounded-lg border-2"
+              className="py-3 px-4 rounded-lg border-2 items-center"
               style={{
-                borderColor: colors.primary,
-                backgroundColor: colors.surface,
+                borderColor: '#D4AF37',
+                borderWidth: 3,
+                backgroundColor: '#2a2a2a',
               }}
             >
-              <Text className="text-center font-semibold" style={{ color: colors.foreground }}>
+              <Text className="text-center font-bold text-base" style={{ color: '#D4AF37' }}>
                 📋 Minhas Fichas
               </Text>
             </Pressable>
 
             <Pressable
               onPress={() => router.push('/settings')}
-              className="py-3 px-4 rounded-lg border-2"
+              className="py-3 px-4 rounded-lg border-2 items-center"
               style={{
-                borderColor: colors.primary,
-                backgroundColor: colors.surface,
+                borderColor: '#D4AF37',
+                borderWidth: 3,
+                backgroundColor: '#2a2a2a',
               }}
             >
-              <Text className="text-center font-semibold" style={{ color: colors.foreground }}>
+              <Text className="text-center font-bold text-base" style={{ color: '#D4AF37' }}>
                 ⚙️ Configurações
               </Text>
             </Pressable>

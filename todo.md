@@ -96,6 +96,15 @@
 - [ ] Implementar tratamento de erros
 - [ ] Adicionar feedback háptico
 
+## Fase 12: Reformulação de Interface (Moderno + Medieval)
+- [x] Gerar assets visuais modernos mantendo essência medieval/fantasia
+- [x] Reformular Lobby com design moderno e limpo
+- [x] Reorganizar fluxo: Criar Sessão (sem classe) e Entrar (com classe)
+- [x] Criar interface especial para Mestre na videoconferência
+- [x] Implementar sistema de rolagem D20 com animação
+- [ ] Sincronizar resultado D20 entre participantes (Socket.io)
+- [ ] Testar fluxo completo end-to-end
+
 ## Fase 11: Documentação e Entrega
 - [ ] Criar roteiro técnico completo (TECHNICAL.md)
 - [ ] Documentar arquitetura de componentes

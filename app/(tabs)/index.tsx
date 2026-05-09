@@ -124,34 +124,36 @@ export default function HomeScreen() {
         </View>
 
           {/* Tabs */}
-        <View className="flex-row gap-2 p-4 border-b" style={{ borderBottomColor: colors.border }}>
+        <View className="flex-col gap-3 p-4 border-b" style={{ borderBottomColor: colors.border }}>
+          {/* Botão Criar Sessão - Maior e Destacado */}
           <Pressable
             onPress={() => setState((prev) => ({ ...prev, activeTab: 'create' }))}
             className={cn(
-              'flex-1 py-3 px-4 rounded-lg items-center border-2',
+              'py-4 px-6 rounded-lg items-center border-2',
               state.activeTab === 'create'
                 ? 'bg-yellow-500'
                 : 'bg-gray-700'
             )}
             style={{
               borderColor: '#D4AF37',
-              borderWidth: 2,
+              borderWidth: 3,
             }}
           >
             <Text
-              className="font-bold text-sm"
+              className="font-bold text-lg"
               style={{
-                color: state.activeTab === 'create' ? '#000' : '#D4AF37',
+                color: '#D4AF37',
               }}
             >
-              👑 Criar Sessão
+              👑 Criar Sessão como Mestre
             </Text>
           </Pressable>
 
+          {/* Botão Entrar na Sessão */}
           <Pressable
             onPress={() => setState((prev) => ({ ...prev, activeTab: 'join' }))}
             className={cn(
-              'flex-1 py-3 px-4 rounded-lg items-center border-2',
+              'py-3 px-4 rounded-lg items-center border-2',
               state.activeTab === 'join'
                 ? 'bg-yellow-500'
                 : 'bg-gray-700'
@@ -162,9 +164,9 @@ export default function HomeScreen() {
             }}
           >
             <Text
-              className="font-bold text-sm"
+              className="font-bold text-base"
               style={{
-                color: state.activeTab === 'join' ? '#000' : '#D4AF37',
+                color: '#D4AF37',
               }}
             >
               🗡️ Entrar na Sessão
@@ -241,7 +243,7 @@ export default function HomeScreen() {
                 className="bg-yellow-500 py-4 rounded-lg items-center border-2"
                 style={{ borderColor: '#D4AF37' }}
               >
-                <Text className="font-bold text-black text-base">
+                <Text className="font-bold text-base" style={{ color: '#D4AF37' }}>
                   👑 Criar Sessão como Mestre
                 </Text>
               </Pressable>

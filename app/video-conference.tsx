@@ -13,6 +13,8 @@ import { ScreenContainer } from '@/components/screen-container';
 import { DiceRoller } from '@/components/dice-roller';
 import { useColors } from '@/hooks/use-colors';
 import { cn } from '@/lib/utils';
+import { buildJitsiUrl, sanitizeRoomId } from '@/services/jitsi-url-builder';
+import { logger } from '@/services/logger';
 
 interface SessionParams {
   playerName?: string;
@@ -36,11 +38,33 @@ export default function VideoConferenceScreen() {
   const openJitsiMeeting = async () => {
     setIsLoading(true);
     try {
-      const jitsiUrl = `https://meet.jitsi.org/${roomId}`;
+      // Validar e construir URL
+      const sanitized = sanitizeRoomId(roomId);
+      if (!sanitized) {
+        Alert.alert('Erro', 'ID da sala inválido');
+        setIsLoading(false);
+        return;
+      }
+
+      const jitsiUrl = buildJitsiUrl({
+        roomId: sanitized,
+        displayName: playerName,
+        startAudioMuted: false,
+        startVideoMuted: false,
+        isMaster,
+      });
+
+      logger.info('VideoConference', 'Abrindo Jitsi', {
+        roomId: sanitized,
+        playerName,
+        isMaster,
+      });
+
       await WebBrowser.openBrowserAsync(jitsiUrl);
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível abrir a videoconferência');
-      console.error('Erro ao abrir Jitsi:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      logger.error('VideoConference', 'Erro ao abrir Jitsi', { error: errorMessage });
+      Alert.alert('Erro', `Não foi possível abrir a videoconferência: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }
@@ -48,7 +72,11 @@ export default function VideoConferenceScreen() {
 
   const handleDiceRoll = (result: number) => {
     setDiceHistory((prev) => [result, ...prev.slice(0, 9)]);
-    console.log(`${playerName} rolou D20: ${result}`);
+    logger.info('VideoConference', 'D20 rolado', {
+      playerName,
+      result,
+      isMaster,
+    });
   };
 
   const exitSession = () => {

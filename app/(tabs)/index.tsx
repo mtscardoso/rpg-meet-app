@@ -230,7 +230,8 @@ export default function HomeScreen() {
 
               <Pressable
                 onPress={() => validateAndNavigate(true)}
-                className="bg-yellow-500 py-4 rounded-lg items-center"
+                className="bg-yellow-500 py-4 rounded-lg items-center border-2"
+                style={{ borderColor: '#D4AF37' }}
               >
                 <Text className="font-bold text-black text-base">
                   👑 Criar Sessão como Mestre
@@ -299,7 +300,8 @@ export default function HomeScreen() {
 
               <Pressable
                 onPress={() => validateAndNavigate(false)}
-                className="bg-yellow-500 py-4 rounded-lg items-center"
+                className="bg-yellow-500 py-4 rounded-lg items-center border-2"
+                style={{ borderColor: '#D4AF37' }}
               >
                 <Text className="font-bold text-black text-base">
                   🗡️ Entrar na Sessão

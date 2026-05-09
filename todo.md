@@ -102,6 +102,10 @@
 - [x] Reorganizar fluxo: Criar Sessão (sem classe) e Entrar (com classe)
 - [x] Criar interface especial para Mestre na videoconferência
 - [x] Implementar sistema de rolagem D20 com animação
+- [x] Adicionar bordas douradas nos botões do menu
+- [x] Avaliar e corrigir geração de link do Jitsi Meet
+- [x] Criar serviço robusto de URL builder com validação e sanitização
+- [x] Implementar 29 testes para URL builder (TODOS PASSANDO)
 - [ ] Sincronizar resultado D20 entre participantes (Socket.io)
 - [ ] Testar fluxo completo end-to-end
 
